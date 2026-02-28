@@ -2,15 +2,152 @@ const { $ } = require('@wdio/globals')
 const Page = require('./page');
 
 /**
- * sub page containing specific selectors and methods for a specific page
+ * Home/Secure Page Object - Encapsulates all home screen elements and actions
+ * This represents the main screen after successful login
+ * Follows OOP principles with proper encapsulation
  */
-class SecurePage extends Page {
+class HomePage extends Page {
     /**
-     * define selectors using getter methods
+     * Define selectors using getter methods
+     * Update resource IDs based on your actual app
      */
-    get flashAlert () {
-        return $('#flash');
+    get welcomeMessage() {
+        return this.findByResourceId('com.yourapp:id/welcome_message');
+    }
+
+    get logoutButton() {
+        return this.findByResourceId('com.yourapp:id/logout_button');
+    }
+
+    get profileIcon() {
+        return this.findByResourceId('com.yourapp:id/profile_icon');
+    }
+
+    get settingsIcon() {
+        return this.findByResourceId('com.yourapp:id/settings_icon');
+    }
+
+    get notificationIcon() {
+        return this.findByResourceId('com.yourapp:id/notification_icon');
+    }
+
+    get searchBar() {
+        return this.findByResourceId('com.yourapp:id/search_bar');
+    }
+
+    get menuButton() {
+        return this.findByResourceId('com.yourapp:id/menu_button');
+    }
+
+    get refreshButton() {
+        return this.findByResourceId('com.yourapp:id/refresh_button');
+    }
+
+    get contentList() {
+        return this.findByResourceId('com.yourapp:id/content_list');
+    }
+
+    get successMessage() {
+        return this.findByResourceId('com.yourapp:id/success_message');
+    }
+
+    /**
+     * Verify home page is displayed
+     * @returns {Promise<boolean>}
+     */
+    async isHomePageDisplayed() {
+        return await this.isElementDisplayed(this.welcomeMessage);
+    }
+
+    /**
+     * Get welcome message text
+     * @returns {Promise<string>}
+     */
+    async getWelcomeMessage() {
+        return await this.getElementText(this.welcomeMessage);
+    }
+
+    /**
+     * Get success message text
+     * @returns {Promise<string>}
+     */
+    async getSuccessMessage() {
+        return await this.getElementText(this.successMessage);
+    }
+
+    /**
+     * Click logout button
+     */
+    async clickLogout() {
+        await this.clickElement(this.logoutButton);
+    }
+
+    /**
+     * Navigate to profile
+     */
+    async navigateToProfile() {
+        await this.clickElement(this.profileIcon);
+    }
+
+    /**
+     * Navigate to settings
+     */
+    async navigateToSettings() {
+        await this.clickElement(this.settingsIcon);
+    }
+
+    /**
+     * Open notifications
+     */
+    async openNotifications() {
+        await this.clickElement(this.notificationIcon);
+    }
+
+    /**
+     * Open menu
+     */
+    async openMenu() {
+        await this.clickElement(this.menuButton);
+    }
+
+    /**
+     * Perform search
+     * @param {string} query - Search query
+     */
+    async search(query) {
+        await this.setInputValue(this.searchBar, query);
+        await this.hideKeyboard();
+    }
+
+    /**
+     * Refresh content
+     */
+    async refreshContent() {
+        await this.clickElement(this.refreshButton);
+    }
+
+    /**
+     * Scroll down on content list
+     */
+    async scrollDown() {
+        await this.swipe('up', 0.7);
+    }
+
+    /**
+     * Scroll up on content list
+     */
+    async scrollUp() {
+        await this.swipe('down', 0.7);
+    }
+
+    /**
+     * Wait for content to load
+     * @param {number} timeout - Timeout in milliseconds
+     * @returns {Promise<boolean>}
+     */
+    async waitForContentLoad(timeout = 10000) {
+        return await this.waitForElement(this.contentList, timeout);
     }
 }
 
-module.exports = new SecurePage();
+module.exports = new HomePage();
