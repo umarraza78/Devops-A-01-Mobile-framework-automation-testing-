@@ -3,9 +3,10 @@ const fs = require('fs')
 const path = require('path')
 
 /**
-* main page object containing all methods, selectors and functionality
-* that is shared across all page objects
-*/
+ * Base Page Object class containing all common methods, selectors and functionality
+ * that is shared across all page objects in mobile automation
+ * Follows OOP principles with encapsulation and reusability
+ */
 module.exports = class Page {
     /**
      * Wait for an element to be displayed
