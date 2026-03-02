@@ -43,12 +43,29 @@ jobs:
       - name: Run Appium tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 30
           arch: x86_64
-          profile: pixel_6
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          profile: Nexus 6
+          force-avd-creation: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -wipe-data -camera-back none -camera-front none
           disable-animations: true
           script: |
+            adb start-server
+            adb devices
+            adb reconnect offline || true
+            for i in {1..30}; do
+              adb wait-for-device || true
+              BOOTED="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+              if [ "$BOOTED" = "1" ]; then
+                echo "Emulator boot completed"
+                break
+              fi
+              echo "Waiting for emulator boot... attempt $i"
+              adb reconnect offline || true
+              sleep 5
+            done
+            adb devices
             appium --log-level info > appium.log 2>&1 &
             adb wait-for-device
             npm run wdio
