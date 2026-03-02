@@ -10,6 +10,7 @@ jobs:
   automated-tests:
     name: Build and Automated Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     env:
       APP_PACKAGE: ${{ secrets.APP_PACKAGE }}
@@ -52,29 +53,83 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load -no-snapshot-save -accel off
           disable-animations: true
           script: |
+            set -euo pipefail
+
             # Start adb server cleanly
             adb kill-server
             adb start-server
 
-            # Wait for emulator boot (max 10 minutes)
-            MAX_WAIT=600
+            # Wait for emulator boot with offline recovery (max 8 minutes)
+            MAX_WAIT=480
             WAITED=0
+            OFFLINE_RETRIES=0
+            MAX_OFFLINE_RETRIES=5
+            SERIAL=""
+
+            echo "Waiting for emulator to register with adb..."
+            until [ -n "${SERIAL}" ]; do
+              SERIAL=$(adb devices | awk 'NR>1 && NF>=2 {print $1; exit}')
+              if [ -z "${SERIAL}" ]; then
+                sleep 3
+                WAITED=$((WAITED+3))
+                if [ "$WAITED" -gt "$MAX_WAIT" ]; then
+                  echo "Emulator did not appear in adb devices after ${MAX_WAIT}s"
+                  adb devices
+                  exit 1
+                fi
+              fi
+            done
+
+            echo "Detected emulator serial: ${SERIAL}"
             echo "Waiting for emulator to boot..."
-            until adb shell getprop sys.boot_completed 2>/dev/null | grep -m 1 1; do
-              sleep 5
-              WAITED=$((WAITED+5))
-              if [ $WAITED -gt $MAX_WAIT ]; then
-                echo "Emulator failed to boot after $MAX_WAIT seconds"
+
+            while true; do
+              STATE=$(adb -s "${SERIAL}" get-state 2>/dev/null || true)
+
+              if [ "${STATE}" = "offline" ]; then
+                OFFLINE_RETRIES=$((OFFLINE_RETRIES+1))
+                echo "Emulator is offline (attempt ${OFFLINE_RETRIES}/${MAX_OFFLINE_RETRIES}). Restarting adb..."
+                adb kill-server
+                adb start-server
+                adb reconnect offline || true
+                sleep 8
+                WAITED=$((WAITED+8))
+
+                if [ "$OFFLINE_RETRIES" -ge "$MAX_OFFLINE_RETRIES" ]; then
+                  echo "Emulator stayed offline after ${MAX_OFFLINE_RETRIES} recovery attempts"
+                  adb devices
+                  exit 1
+                fi
+              elif [ "${STATE}" = "device" ]; then
+                BOOT_COMPLETED=$(adb -s "${SERIAL}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+                BOOT_ANIM=$(adb -s "${SERIAL}" shell getprop init.svc.bootanim 2>/dev/null | tr -d '\r' || true)
+
+                if [ "${BOOT_COMPLETED}" = "1" ] && [ "${BOOT_ANIM}" = "stopped" ]; then
+                  break
+                fi
+
+                sleep 5
+                WAITED=$((WAITED+5))
+              else
+                sleep 5
+                WAITED=$((WAITED+5))
+              fi
+
+              if [ "$WAITED" -gt "$MAX_WAIT" ]; then
+                echo "Emulator failed to boot after ${MAX_WAIT} seconds"
+                adb devices
                 exit 1
               fi
+
               adb devices
               echo "Still waiting for emulator..."
             done
+
             echo "Emulator boot completed!"
 
             # Ensure device is online
-            adb wait-for-device
-            adb devices
+            adb -s "${SERIAL}" wait-for-device
+            adb devices -l
 
             # Start Appium server in background
             nohup appium --log-level info > appium.log 2>&1 &
