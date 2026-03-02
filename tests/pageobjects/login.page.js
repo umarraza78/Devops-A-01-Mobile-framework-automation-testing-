@@ -43,6 +43,73 @@ class LoginPage extends Page {
     }
 
     /**
+     * Resolve the username input element using multiple selector strategies
+     * Tries resource ID, then class-based, then content description
+     * @returns {Promise<WebdriverIO.Element>}
+     */
+    async resolveUsernameInput() {
+        const strategies = [
+            () => this.findByResourceId('com.yourapp:id/username'),
+            () => $('android=new UiSelector().className("android.widget.EditText").instance(0)'),
+            () => this.findByPartialText('user'),
+            () => this.findByPartialText('email'),
+            () => this.findByContentDesc('Username'),
+        ];
+        return await this._resolveElement(strategies, 'username input');
+    }
+
+    /**
+     * Resolve the password input element using multiple selector strategies
+     * @returns {Promise<WebdriverIO.Element>}
+     */
+    async resolvePasswordInput() {
+        const strategies = [
+            () => this.findByResourceId('com.yourapp:id/password'),
+            () => $('android=new UiSelector().className("android.widget.EditText").instance(1)'),
+            () => this.findByPartialText('pass'),
+            () => this.findByContentDesc('Password'),
+        ];
+        return await this._resolveElement(strategies, 'password input');
+    }
+
+    /**
+     * Resolve the primary login action element (button, text, etc.)
+     * @returns {Promise<WebdriverIO.Element>}
+     */
+    async getPrimaryLoginActionElement() {
+        const strategies = [
+            () => this.findByResourceId('com.yourapp:id/login_button'),
+            () => this.findByText('Login'),
+            () => this.findByText('LOG IN'),
+            () => this.findByText('Sign in'),
+            () => this.findByText('SIGN IN'),
+            () => $('android=new UiSelector().className("android.widget.Button").instance(0)'),
+        ];
+        return await this._resolveElement(strategies, 'login action');
+    }
+
+    /**
+     * Try multiple selector strategies and return the first element found
+     * @param {Array<Function>} strategies - Array of functions returning elements
+     * @param {string} name - Name for logging
+     * @returns {Promise<WebdriverIO.Element>}
+     */
+    async _resolveElement(strategies, name) {
+        for (const strategy of strategies) {
+            try {
+                const el = await strategy();
+                if (await el.isExisting()) {
+                    return el;
+                }
+            } catch (e) {
+                // try next strategy
+            }
+        }
+        console.log(`Could not resolve ${name} with any strategy, returning first selector`);
+        return await strategies[0]();
+    }
+
+    /**
      * Enter username
      * @param {string} username - Username to enter
      */
