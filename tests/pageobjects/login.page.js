@@ -79,6 +79,8 @@ class LoginPage extends Page {
     async getPrimaryLoginActionElement() {
         const strategies = [
             () => this.findByResourceId('com.yourapp:id/login_button'),
+            () => this.findByText('Continue'),
+            () => this.findByText('CONTINUE'),
             () => this.findByText('Login'),
             () => this.findByText('LOG IN'),
             () => this.findByText('Sign in'),
