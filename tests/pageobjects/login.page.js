@@ -114,7 +114,8 @@ class LoginPage extends Page {
      * @param {string} username - Username to enter
      */
     async enterUsername(username) {
-        await this.setInputValue(this.usernameInput, username);
+        const el = await this.resolveUsernameInput();
+        await this.setInputValue(el, username);
     }
 
     /**
@@ -122,7 +123,8 @@ class LoginPage extends Page {
      * @param {string} password - Password to enter
      */
     async enterPassword(password) {
-        await this.setInputValue(this.passwordInput, password);
+        const el = await this.resolvePasswordInput();
+        await this.setInputValue(el, password);
     }
 
     /**
@@ -184,15 +186,26 @@ class LoginPage extends Page {
      * @returns {Promise<boolean>}
      */
     async isLoginPageDisplayed() {
-        return await this.isElementDisplayed(this.loginButton);
+        try {
+            const el = await this.getPrimaryLoginActionElement();
+            return await el.isDisplayed();
+        } catch (e) {
+            return false;
+        }
     }
 
     /**
      * Clear login form
      */
     async clearForm() {
-        await this.usernameInput.clearValue();
-        await this.passwordInput.clearValue();
+        try {
+            const usr = await this.resolveUsernameInput();
+            const pwd = await this.resolvePasswordInput();
+            if (await usr.isExisting()) await usr.clearValue();
+            if (await pwd.isExisting()) await pwd.clearValue();
+        } catch (e) {
+            console.log('Could not clear form:', e.message);
+        }
     }
 
     /**
@@ -200,7 +213,12 @@ class LoginPage extends Page {
      * @returns {Promise<boolean>}
      */
     async isLoginButtonEnabled() {
-        return await this.isElementEnabled(this.loginButton);
+        try {
+            const el = await this.getPrimaryLoginActionElement();
+            return await el.isEnabled();
+        } catch (e) {
+            return false;
+        }
     }
 }
 

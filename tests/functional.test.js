@@ -75,7 +75,7 @@ describe('Functional Test Automation - 10 Independent Cases', () => {
         const usernameField = await LoginPage.resolveUsernameInput()
         const sampleUsername = `qa_${Date.now()}`
 
-        await LoginPage.enterUsername(sampleUsername)
+        await usernameField.setValue(sampleUsername)
         const currentValue = await usernameField.getText()
 
         AssertionHelper.assertTrue(
@@ -88,7 +88,7 @@ describe('Functional Test Automation - 10 Independent Cases', () => {
         const passwordField = await LoginPage.resolvePasswordInput()
         const samplePassword = 'Pass@1234'
 
-        await LoginPage.enterPassword(samplePassword)
+        await passwordField.setValue(samplePassword)
         const currentValue = await passwordField.getText()
 
         AssertionHelper.assertTrue(
