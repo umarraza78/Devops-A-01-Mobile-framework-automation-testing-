@@ -52,23 +52,31 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load -no-snapshot-save -accel off
           disable-animations: true
           script: |
+            # Start adb server
             adb start-server
-            adb devices
-            adb reconnect offline || true
-            for i in {1..30}; do
-              adb wait-for-device || true
-              BOOTED="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+            adb kill-server
+            adb start-server
+
+            # Wait for emulator to be ready
+            for i in {1..60}; do
+              adb devices
+              BOOTED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
               if [ "$BOOTED" = "1" ]; then
-                echo "Emulator boot completed"
+                echo "Emulator boot completed!"
                 break
               fi
               echo "Waiting for emulator boot... attempt $i"
-              adb reconnect offline || true
               sleep 5
             done
-            adb devices
-            appium --log-level info > appium.log 2>&1 &
+
+            # Ensure emulator is online
             adb wait-for-device
+            adb devices
+
+            # Start Appium server
+            nohup appium --log-level info > appium.log 2>&1 &
+
+            # Run WebdriverIO tests
             npm run wdio
 
       - name: Upload test artifacts
