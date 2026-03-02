@@ -50,7 +50,7 @@ jobs:
       - name: Run Appium tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 34
           arch: x86_64
           target: google_apis
           force-avd-creation: true

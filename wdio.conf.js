@@ -22,8 +22,7 @@ exports.config = {
     capabilities: [{
         platformName: "Android",
         "appium:automationName": "UiAutomator2",
-        "appium:deviceName": "Android Emulator",  // change if using real device
-        "appium:platformVersion": "13",          // optional: use your emulator/android version
+        "appium:deviceName": "Android Emulator",
         "appium:app": "./app/myapp.apk",
         "appium:autoGrantPermissions": true,
         "appium:androidInstallTimeout": 180000,
