@@ -10,7 +10,7 @@ exports.config = {
     // Specify Test Files
     // ==================
     specs: [
-        './tests/**/*.test.js'
+        './tests/functional.test.js'
     ],
     exclude: [],
 

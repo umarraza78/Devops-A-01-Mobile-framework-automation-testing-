@@ -1,0 +1,65 @@
+name: JavaScript CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  automated-tests:
+    name: Build and Automated Tests
+    runs-on: ubuntu-latest
+
+    env:
+      APP_PACKAGE: ${{ secrets.APP_PACKAGE }}
+      TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build JavaScript project
+        run: npm run build --if-present
+
+      - name: Install Appium
+        run: |
+          npm install -g appium
+          appium driver install uiautomator2
+
+      - name: Validate APK exists
+        run: test -f app/myapp.apk
+
+      - name: Run Appium tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            appium --log-level info > appium.log 2>&1 &
+            adb wait-for-device
+            npm run wdio
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-test-artifacts
+          path: |
+            screenshots/**
+            appium.log
+            wdio.log
+          if-no-files-found: ignore
