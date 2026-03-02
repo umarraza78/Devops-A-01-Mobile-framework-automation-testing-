@@ -58,7 +58,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load -no-snapshot-save
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
 
             # The action already waited for boot; verify device is ready
             echo "Verifying emulator is online..."
