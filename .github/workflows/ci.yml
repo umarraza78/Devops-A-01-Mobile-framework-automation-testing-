@@ -43,12 +43,13 @@ jobs:
       - name: Run Appium tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
-          arch: x86_64
-          profile: Nexus 6
+          api-level: 29
+          arch: x86
+          profile: Nexus 5
+          target: default
           force-avd-creation: true
           emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -wipe-data -camera-back none -camera-front none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load -no-snapshot-save -accel off
           disable-animations: true
           script: |
             adb start-server
