@@ -48,35 +48,38 @@ jobs:
           profile: Nexus 5
           target: default
           force-avd-creation: true
-          emulator-boot-timeout: 900
+          emulator-boot-timeout: 1200  # 20 minutes to allow software emulator boot
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load -no-snapshot-save -accel off
           disable-animations: true
           script: |
-            # Start adb server
-            adb start-server
+            # Start adb server cleanly
             adb kill-server
             adb start-server
 
-            # Wait for emulator to be ready
-            for i in {1..60}; do
-              adb devices
-              BOOTED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-              if [ "$BOOTED" = "1" ]; then
-                echo "Emulator boot completed!"
-                break
-              fi
-              echo "Waiting for emulator boot... attempt $i"
+            # Wait for emulator boot (max 10 minutes)
+            MAX_WAIT=600
+            WAITED=0
+            echo "Waiting for emulator to boot..."
+            until adb shell getprop sys.boot_completed 2>/dev/null | grep -m 1 1; do
               sleep 5
+              WAITED=$((WAITED+5))
+              if [ $WAITED -gt $MAX_WAIT ]; then
+                echo "Emulator failed to boot after $MAX_WAIT seconds"
+                exit 1
+              fi
+              adb devices
+              echo "Still waiting for emulator..."
             done
+            echo "Emulator boot completed!"
 
-            # Ensure emulator is online
+            # Ensure device is online
             adb wait-for-device
             adb devices
 
-            # Start Appium server
+            # Start Appium server in background
             nohup appium --log-level info > appium.log 2>&1 &
 
-            # Run WebdriverIO tests
+            # Run your WebdriverIO tests
             npm run wdio
 
       - name: Upload test artifacts
