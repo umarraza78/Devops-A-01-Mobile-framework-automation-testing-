@@ -4,11 +4,13 @@ const Page = require('./page');
 const APP_PACKAGE = process.env.APP_PACKAGE || 'com.yourapp';
 
 /**
- * sub page containing specific selectors and methods for a specific page
+ * Login Page Object - Encapsulates all login screen elements and actions
+ * Follows OOP principles with proper encapsulation and single responsibility
  */
 class LoginPage extends Page {
     /**
-     * define selectors using getter methods
+     * Define selectors using getter methods for lazy evaluation
+     * Using Android resource IDs - update these based on your actual app
      */
     get usernameInput() {
         return this.findByResourceId(`${APP_PACKAGE}:id/username`);
@@ -95,8 +97,8 @@ class LoginPage extends Page {
     }
 
     /**
-     * a method to encapsule automation code to interact with the page
-     * e.g. to login using username and password
+     * Enter username
+     * @param {string} username - Username to enter
      */
     async enterUsername(username) {
         const usernameField = await this.resolveUsernameInput();
@@ -104,7 +106,8 @@ class LoginPage extends Page {
     }
 
     /**
-     * overwrite specific options to adapt it to page object
+     * Enter password
+     * @param {string} password - Password to enter
      */
     async enterPassword(password) {
         const passwordField = await this.resolvePasswordInput();
@@ -129,11 +132,11 @@ class LoginPage extends Page {
     async login(username, password, rememberMe = false) {
         await this.enterUsername(username);
         await this.enterPassword(password);
-        
+
         if (rememberMe) {
             await this.clickElement(this.rememberMeCheckbox);
         }
-        
+
         await this.clickLogin();
     }
 

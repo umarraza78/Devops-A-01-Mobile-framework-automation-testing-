@@ -4,11 +4,14 @@ const Page = require('./page');
 const APP_PACKAGE = process.env.APP_PACKAGE || 'com.yourapp';
 
 /**
- * sub page containing specific selectors and methods for a specific page
+ * Home/Secure Page Object - Encapsulates all home screen elements and actions
+ * This represents the main screen after successful login
+ * Follows OOP principles with proper encapsulation
  */
-class SecurePage extends Page {
+class HomePage extends Page {
     /**
-     * define selectors using getter methods
+     * Define selectors using getter methods
+     * Update resource IDs based on your actual app
      */
     get welcomeMessage() {
         return this.findByResourceId(`${APP_PACKAGE}:id/welcome_message`);
@@ -149,4 +152,4 @@ class SecurePage extends Page {
     }
 }
 
-module.exports = new SecurePage();
+module.exports = new HomePage();
