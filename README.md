@@ -5,7 +5,7 @@ A comprehensive mobile automation testing framework using WebdriverIO and Appium
 ## 🚀 Features
 
 - **Page Object Model (POM)**: Clean separation of test logic and page structure
-- **OOP Principles**: Inheritance, encapsulation, abstraction, and single responsibility
+- **Object Oriented Principles**: Inheritance, encapsulation, abstraction, and single responsibility
 - **Reusable Components**: Base classes and helper utilities to avoid code duplication
 - **Mobile-Specific Actions**: Swipe, scroll, tap, long press, and other gestures
 - **Smart Wait Strategies**: Multiple wait helpers with retry and backoff mechanisms
